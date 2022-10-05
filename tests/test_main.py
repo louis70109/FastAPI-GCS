@@ -1,6 +1,3 @@
-import io
-import os
-from pathlib import Path
 import unittest
 from _pytest.monkeypatch import MonkeyPatch
 from mock import patch
@@ -16,21 +13,23 @@ def test_read_main():
     assert response.status_code == 200
     assert response.json() == {"message": "Hello World!"}
 
-def test_upload():
+def test_upload_success():
     filename = 'requirements.txt'
-    try:
-        with open(filename, 'rb') as f:
+    with open(filename, 'rb') as f:
+        text = f.read()
+        response = client.post("/upload", files={"files": (filename, text)}, auth=('admin', 'admin'))
+        print(response.json())
+        assert response.status_code == 200
+        assert response.json() == {"message": "Successfully uploaded"}
 
-            text = f.read()
-            response = client.post("/upload", files={"files": (filename, text)})
-            assert response.status_code == 200
-            assert response.json() == {"message": "Successfully uploaded"}
-    except:
-        raise
-    # data = {'files': [(io.StringIO('my file contents'), 'hello world.txt')]}
-    # print(data)
-    
-    # assert response.json() == {"message": "Hello World!"}
+def test_upload_failure():
+    filename = 'requirements.txt'
+    with open(filename, 'rb') as f:
+        text = f.read()
+        response = client.post("/upload", files={"files": (filename, text)}, auth=('admin1', 'admin1'))
+
+        assert response.status_code == 401
+        assert response.json() == {'detail': 'Incorrect username or password'}
 
 # class TestClient(unittest.TestCase):
 #     def setUp(self):
