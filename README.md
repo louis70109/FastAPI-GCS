@@ -1,4 +1,4 @@
-# FastAPI Example
+# FastAPI GCS Example
 
 - GET  '/': Health check.
 - GET  '/upload': Upload file page.
