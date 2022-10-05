@@ -9,3 +9,5 @@ pytest-pep8
 pytest-cov
 mock
 python-multipart
+gunicorn
+google-cloud-storage
