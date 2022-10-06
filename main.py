@@ -1,24 +1,19 @@
+import logging
 import os
 import tempfile
-import logging
-from utils.auth import get_current_username
+logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+logger = logging.getLogger(__name__)
+
 if os.getenv('API_ENV') != 'production':
     from dotenv import load_dotenv
-    logging.info('Dev env file loading.')
+    logger.info('Dev env file loading.')
     load_dotenv()
 
 import uvicorn
-from fastapi import FastAPI, Request, Depends, File, UploadFile
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from typing import List
-
-from routers import users, items
-from utils.gcp import upload_data_to_gcs
+from fastapi import FastAPI
+from routers import items, upload, users
 
 app = FastAPI()
-logging.basicConfig(level="INFO")
-logger = logging.getLogger(__name__)
 
 google_temp = tempfile.NamedTemporaryFile(suffix='.json')
 try:
@@ -33,39 +28,16 @@ except Exception as e:
     raise
 
 
-templates = Jinja2Templates(directory="templates")
 
 app.include_router(users.router)
 app.include_router(items.router)
+app.include_router(upload.router)
 
 
 @app.get("/")
 async def health():
     return {"message": "Hello World!"}
 
-
-@app.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request, username: str = Depends(get_current_username)):
-    logger.debug("Basic login success.")
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.post("/upload")
-def upload(files: List[UploadFile] = File(...), username: str = Depends(get_current_username)):
-    for file in files:
-        try:
-            contents = file.file.read()
-            logger.debug(f'content file is {contents}')
-            url = upload_data_to_gcs(os.getenv('GOOGLE_BUCKET'), contents, file.filename,
-                    meta=file.content_type)
-            logger.debug(f'GCS upload file link: {url}')
-        except Exception as e:
-            logger.warning(e)
-            logger.warn(f'File upload to GCS fail. Please check GCP json key and bucket.')
-            return {"message": "There was an error uploading the file(s)"}
-        finally:
-            file.file.close()
-
-    return {"message": "Successfully uploaded"}  
 
 
 if __name__ == "__main__":
