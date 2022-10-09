@@ -1,14 +1,13 @@
 # FastAPI GCS Example
 
 - GET  '/': Health check.
-- GET  '/upload': Upload file page.
-- POST '/upload': Upload multi-file API.
-  - Test case in 'tests/'.
+- Basic Auth. (default: admin/admin)
+  - GET  '/upload/': Upload file page.
+  - POST '/upload/': Upload multi-file API.
 
 ## Prerequisite
 
 - Python 3.7+
-- Docker
 
 ## Development
 
