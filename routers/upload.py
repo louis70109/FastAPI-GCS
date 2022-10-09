@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from utils.gcp import upload_data_to_gcs
 from utils.auth import get_current_username
 import logging
+
 logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory="templates")
 
@@ -17,13 +18,13 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_class=HTMLResponse)
-async def upload_page(request: Request, username: str = Depends(get_current_username)):
+@router.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def upload_page(request: Request, basic_auth: str = Depends(get_current_username)):
     logger.debug("Basic login success.")
     return templates.TemplateResponse("index.html", {"request": request})
 
-@router.post("/")
-def upload(files: List[UploadFile] = File(...), username: str = Depends(get_current_username)):
+@router.post("/", include_in_schema=False)
+def upload(files: List[UploadFile] = File(...), basic_auth: str = Depends(get_current_username)):
     for file in files:
         try:
             contents = file.file.read()
@@ -33,7 +34,7 @@ def upload(files: List[UploadFile] = File(...), username: str = Depends(get_curr
             logger.debug(f'GCS upload file link: {url}')
         except Exception as e:
             logger.warning(e)
-            logger.warn(f'File upload to GCS fail. Please check GCP json key and bucket.')
+            logger.warning(f'File upload to GCS fail. Please check GCP json key and bucket.')
             return {"message": "There was an error uploading the file(s)"}
         finally:
             file.file.close()

@@ -11,7 +11,7 @@ if os.getenv('API_ENV') != 'production':
 
 import uvicorn
 from fastapi import FastAPI
-from routers import items, upload, users
+from routers import upload
 
 app = FastAPI()
 
@@ -23,21 +23,15 @@ try:
     google_temp.seek(0)
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = google_temp.name
 except Exception as e:
-    logger.warn(f'GCP JSON key format error. {e}')
+    logger.warning(f'GCP JSON key format error. {e}')
     google_temp.close()
     raise
 
-
-
-app.include_router(users.router)
-app.include_router(items.router)
 app.include_router(upload.router)
-
 
 @app.get("/")
 async def health():
     return {"message": "Hello World!"}
-
 
 
 if __name__ == "__main__":
