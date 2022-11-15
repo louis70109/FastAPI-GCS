@@ -22,6 +22,7 @@ try:
     google_temp.write(GOOGLE_KEY.encode())
     google_temp.seek(0)
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = google_temp.name
+    logger.debug(google_temp.name)
 except Exception as e:
     logger.warning(f'GCP JSON key format error. {e}')
     google_temp.close()
