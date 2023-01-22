@@ -26,3 +26,9 @@ docker-compose up
 ```shell
 curl http://localhost:5000/
 ```
+
+## Deploy to GCP
+
+```
+gcloud run deploy nijia-cloud-run-example-1 --source .
+```
